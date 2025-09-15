@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: postgres17_lab
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: ${PGDATA}
+      
+    ports:
+      - "${POSTGRES_PORT}:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../sql:/docker-entrypoint-initdb.d
+      - ./pg_config/postgresql.conf:/etc/postgresql/ci-cd-files/pg_config/postgresql.conf:ro
+      - ./pg_config/pg_hba.conf:/etc/postgresql/ci-cd-files/pg_config/pg_hba.conf:ro
+
+    command: >
+      postgres
+      -c config_file=/etc/postgresql/ci-cd-files/pg_config/postgresql.conf
+      -c hba_file=/etc/postgresql/ci-cd-files/pg_config/pg_hba.conf
+
+    networks:
+      - postgres_network
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  postgres_network:
+    driver: bridge
