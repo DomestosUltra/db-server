@@ -1,0 +1,16 @@
+FROM postgres:17
+
+# Устанавливаем утилиты
+RUN apt-get update \
+ && apt-get install -y git cron bash \
+ && rm -rf /var/lib/apt/lists/*
+
+# Копируем скрипт
+COPY backup-cron.sh /usr/local/bin/backup-cron.sh
+RUN chmod +x /usr/local/bin/backup-cron.sh
+
+# Перенаправляем логи cron в /var/log/cron.log
+RUN touch /var/log/cron.log \
+ && chmod 0666 /var/log/cron.log
+
+ENTRYPOINT ["/usr/local/bin/backup-cron.sh"]

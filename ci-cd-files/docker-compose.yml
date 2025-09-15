@@ -34,6 +34,28 @@ services:
       retries: 3
       start_period: 30s
 
+  # backup:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.backup
+  #   container_name: postgres_backup
+  #   depends_on:
+  #     - postgres
+  #   environment:
+  #     GIT_REPO: ${GIT_REPO}
+  #     GIT_BRANCH: ${GIT_BRANCH:-main}
+  #     GIT_COMMIT_EMAIL: ${GIT_COMMIT_EMAIL}
+  #     GIT_COMMIT_NAME: ${GIT_COMMIT_NAME}
+  #     CRON_SCHEDULE: "${CRON_SCHEDULE:-0 2 * * *}"
+  #     POSTGRES_USER: ${POSTGRES_USER}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data:ro
+  #     - ./backups:/backups
+  #   networks:
+  #     - postgres_network
+
+
 volumes:
   postgres_data:
     driver: local
