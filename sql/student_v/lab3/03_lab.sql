@@ -1,6 +1,6 @@
--- lab3_variant10.sql
+-- lab3_variant10_alternative.sql
 -- Лабораторная работа №3: Использование агрегатных функций и массивов в среде PostgreSQL
--- Вариант 10: Туристическое агентство
+-- Вариант 10: Туристическое агентство (альтернативная версия)
 
 -- Настройки psql
 \set ECHO all
@@ -33,21 +33,21 @@ CREATE TABLE schedule_matrix (
 
 -- 3. Вставка данных в таблицу с одномерным массивом (минимум 6 записей)
 INSERT INTO tour_features (tour_name, features, description) VALUES
-    ('Золотое кольцо', ARRAY[8,7,9,6,8], 'Комфорт, питание, экскурсии, транспорт, гид'),
-    ('Байкал экспресс', ARRAY[9,8,10,7,9], 'Высокий уровень сервиса'),
-    ('Крымский тур', ARRAY[7,6,8,8,7], 'Стандартный пакет услуг'),
-    ('Сочи релакс', ARRAY[10,9,8,9,10], 'Премиум класс'),
-    ('Питерские белые ночи', ARRAY[NULL,8,9,7,8], 'Один критерий не оценен'),
-    ('Казанский уикенд', ARRAY[]::INTEGER[], 'Новый тур без оценок');
+    ('Кавказские вершины', ARRAY[9,8,7,9,8], 'Горный туризм, комфорт, безопасность, экипировка, гид'),
+    ('Камчатка дикая', ARRAY[10,9,6,10,9], 'Экстремальный туризм высшего класса'),
+    ('Алтайские просторы', ARRAY[8,7,9,7,8], 'Эко-туризм среднего уровня'),
+    ('Карельские озера', ARRAY[7,8,10,8,9], 'Водный туризм премиум'),
+    ('Уральские тайны', ARRAY[NULL,9,8,6,7], 'Один критерий в разработке'),
+    ('Дальневосточный экспресс', ARRAY[]::INTEGER[], 'Новое направление без рейтингов');
 
 -- 4. Вставка данных в таблицу с многомерным массивом (минимум 6 записей)
 INSERT INTO schedule_matrix (leader_name, monthly_schedule, notes) VALUES
-    ('Иванов', ARRAY[['Пн','Вт','Ср','Чт','Пт'],['Сб','Вс','Пн','Вт','Ср']], 'Сентябрь 1-2 недели'),
-    ('Петров', ARRAY[['Отпуск','Отпуск','Отпуск','Отпуск','Отпуск'],['Пн','Вт','Ср','Чт','Пт']], 'Первая неделя отпуск'),
-    ('Сидоров', ARRAY[['Пн','Вт','Ср','Чт','Пт'],['Пн','Вт','Ср','Чт','Пт']], 'Стандартный график'),
-    ('Кузнецов', ARRAY[['Пн',NULL,'Ср','Чт','Пт'],['Сб','Вс','Пн','Вт','Ср']], 'Вторник - больничный'),
-    ('Попов', ARRAY[['Пн','Вт','Ср','Чт','Пт'],['Сб','Вс',NULL,'Вт','Ср']], 'Понедельник 2 недели - выходной'),
-    ('Васильев', ARRAY[['Ср','Чт','Пт','Сб','Вс'],['Пн','Вт','Ср','Чт','Пт']], 'Сдвинутый график');
+    ('Белкин', ARRAY[['Пт','Сб','Вс','Пн','Вт'],['Ср','Чт','Пт','Сб','Вс']], 'Октябрь 1-2 недели'),
+    ('Рогов', ARRAY[['Выходной','Выходной','Выходной','Выходной','Выходной'],['Пт','Сб','Вс','Пн','Вт']], 'Первая неделя отдых'),
+    ('Зимин', ARRAY[['Ср','Чт','Пт','Сб','Вс'],['Ср','Чт','Пт','Сб','Вс']], 'Постоянный график'),
+    ('Громов', ARRAY[['Ср',NULL,'Пт','Сб','Вс'],['Пн','Вт','Ср','Чт','Пт']], 'Четверг - обучение'),
+    ('Сокол', ARRAY[['Ср','Чт','Пт','Сб','Вс'],['Пн','Вт',NULL,'Чт','Пт']], 'Среда 2 недели - семинар'),
+    ('Орлов', ARRAY[['Чт','Пт','Сб','Вс','Пн'],['Ср','Чт','Пт','Сб','Вс']], 'Смещенный режим');
 
 -- 5. Выборка без NULL элементов в массивах
 SELECT 'Туры без неоцененных критериев:' AS info;
@@ -125,18 +125,18 @@ SELECT id, leader_name, array_dims(monthly_schedule) AS dims FROM schedule_matri
 
 -- 8. Обновление данных - модификация среза массива
 UPDATE tour_features 
-SET features[1:2] = ARRAY[10,10] 
-WHERE tour_name = 'Золотое кольцо';
+SET features[1:2] = ARRAY[10,9] 
+WHERE tour_name = 'Кавказские вершины';
 
 -- Обновление отдельного элемента массива
 UPDATE schedule_matrix 
-SET monthly_schedule[1][2] = 'Больничный' 
-WHERE leader_name = 'Иванов';
+SET monthly_schedule[1][3] = 'Конференция' 
+WHERE leader_name = 'Белкин';
 
 -- Проверка обновлений
 SELECT 'После обновлений:' AS info;
-SELECT id, tour_name, features FROM tour_features WHERE tour_name = 'Золотое кольцо';
-SELECT id, leader_name, monthly_schedule FROM schedule_matrix WHERE leader_name = 'Иванов';
+SELECT id, tour_name, features FROM tour_features WHERE tour_name = 'Кавказские вершины';
+SELECT id, leader_name, monthly_schedule FROM schedule_matrix WHERE leader_name = 'Белкин';
 
 -- =============================================================================
 -- ЧАСТЬ 2: ПОДГОТОВКА БАЗЫ ТУРИСТИЧЕСКОГО АГЕНТСТВА
@@ -177,46 +177,46 @@ CREATE TABLE orders (
   participants INT NOT NULL
 );
 
--- Заполнение данными
+-- Заполнение данными (другие города - регионы России)
 INSERT INTO cities (name) VALUES
-  ('Москва'),('Питер'),('Казань'),('Новосибирск'),('Екатеринбург'),
-  ('Самара'),('Ростов-на-Дону'),('Волгоград'),('Краснодар'),('Сочи');
+  ('Владикавказ'),('Петропавловск-Камчатский'),('Горно-Алтайск'),('Петрозаводск'),('Магадан'),
+  ('Южно-Сахалинск'),('Элиста'),('Якутск'),('Анадырь'),('Салехард');
 
 INSERT INTO leaders (last_name,birth_date) VALUES
-  ('Иванов','1980-01-01'),
-  ('Петров','1995-06-15'),
-  ('Сидоров','1999-12-30'),
-  ('Кузнецов','1975-03-20'),
-  ('Попов','1990-09-10'),
-  ('Васильев','1985-11-25'),
-  ('Михайлов','1998-07-07'),
-  ('Новиков','1970-05-05'),
-  ('Федоров','1992-02-14'),
-  ('Морозов','1988-08-08');
+  ('Белкин','1981-04-12'),
+  ('Рогов','1994-07-28'),
+  ('Зимин','1998-10-05'),
+  ('Громов','1977-01-18'),
+  ('Сокол','1989-05-22'),
+  ('Орлов','1986-08-14'),
+  ('Лисица','1997-03-09'),
+  ('Волк','1972-12-03'),
+  ('Медведь','1993-06-17'),
+  ('Соболь','1987-09-26');
 
 INSERT INTO tours (tour_type,price,start_date,city_id) VALUES
-  ('автобусный',10000,'2025-10-01',1),
-  ('железнодорожный',15000,'2025-11-05',2),
-  ('авиа',25000,'2025-12-20',3),
-  ('автобусный',12000,'2025-09-15',4),
-  ('железнодорожный',18000,'2025-10-10',5),
-  ('авиа',30000,'2025-11-25',6),
-  ('автобусный',11000,'2025-12-05',7),
-  ('железнодорожный',16000,'2025-09-20',8),
-  ('авиа',27000,'2025-10-15',9),
-  ('автобусный',13000,'2025-11-30',10);
+  ('автобусный',14500,'2025-10-05',1),
+  ('железнодорожный',28000,'2025-11-08',2),
+  ('авиа',42000,'2025-12-18',3),
+  ('автобусный',16200,'2025-09-18',4),
+  ('железнодорожный',31000,'2025-10-14',5),
+  ('авиа',38000,'2025-11-22',6),
+  ('автобусный',13800,'2025-12-02',7),
+  ('железнодорожный',25500,'2025-09-24',8),
+  ('авиа',45000,'2025-10-11',9),
+  ('автобусный',15600,'2025-11-27',10);
 
 INSERT INTO orders (order_date,order_number,tour_id,leader_id,participants) VALUES
-  ('2025-09-01','ORD1001',1,1,15),
-  ('2025-09-02','ORD1002',2,2,20),
-  ('2025-09-03','ORD1003',3,3,10),
-  ('2025-09-04','ORD1004',4,4,25),
-  ('2025-09-05','ORD1005',5,5,18),
-  ('2025-09-06','ORD1006',6,6,22),
-  ('2025-09-07','ORD1007',7,7,12),
-  ('2025-09-08','ORD1008',8,8,14),
-  ('2025-09-09','ORD1009',9,9,19),
-  ('2025-09-10','ORD1010',10,10,16);
+  ('2025-08-28','EXP4001',1,1,16),
+  ('2025-08-29','EXP4002',2,2,24),
+  ('2025-08-30','EXP4003',3,3,12),
+  ('2025-08-31','EXP4004',4,4,22),
+  ('2025-09-01','EXP4005',5,5,19),
+  ('2025-09-02','EXP4006',6,6,25),
+  ('2025-09-03','EXP4007',7,7,11),
+  ('2025-09-04','EXP4008',8,8,17),
+  ('2025-09-05','EXP4009',9,9,23),
+  ('2025-09-06','EXP4010',10,10,14);
 
 -- =============================================================================
 -- ЧАСТЬ 3: АГРЕГАТНЫЕ ФУНКЦИИ (ВАРИАНТ 10)
@@ -244,12 +244,12 @@ SELECT COUNT(*) AS bus_tours_count
 FROM tours 
 WHERE tour_type = 'автобусный';
 
--- 4. Найти среднюю стоимость туров в город Москву
-SELECT 'Средняя стоимость туров в Москву:' AS query_name;
-SELECT ROUND(AVG(t.price), 2) AS avg_moscow_price
+-- 4. Найти среднюю стоимость туров в город Владикавказ
+SELECT 'Средняя стоимость туров во Владикавказ:' AS query_name;
+SELECT ROUND(AVG(t.price), 2) AS avg_vladikavkaz_price
 FROM tours t
 JOIN cities c ON t.city_id = c.id
-WHERE c.name = 'Москва';
+WHERE c.name = 'Владикавказ';
 
 -- 5. Найти общую стоимость туров, выполненных руководителями со стажем работы более 10 лет
 -- (предполагаем, что стаж = возраст - 25 лет минимального возраста начала работы)
@@ -277,10 +277,10 @@ FROM tours
 GROUP BY tour_type
 ORDER BY avg_price DESC;
 
--- Статистика по городам
-SELECT 'Статистика заказов по городам:' AS query_name;
+-- Статистика по регионам
+SELECT 'Статистика заказов по регионам:' AS query_name;
 SELECT 
-    c.name as city_name,
+    c.name as region_name,
     COUNT(o.id) as orders_count,
     SUM(o.participants) as total_participants,
     SUM(t.price * o.participants) as total_revenue
@@ -290,24 +290,46 @@ JOIN cities c ON t.city_id = c.id
 GROUP BY c.name
 ORDER BY total_revenue DESC;
 
--- Статистика по руководителям
-SELECT 'Статистика по руководителям:' AS query_name;
+-- Статистика по экспедиционным руководителям
+SELECT 'Статистика по экспедиционным руководителям:' AS query_name;
 SELECT 
     l.last_name,
     l.birth_date,
     DATE_PART('year', AGE(CURRENT_DATE, l.birth_date)) as age,
-    COUNT(o.id) as orders_count,
-    SUM(o.participants) as total_participants
+    COUNT(o.id) as expeditions_led,
+    SUM(o.participants) as total_explorers
 FROM leaders l
 LEFT JOIN orders o ON l.id = o.leader_id
 GROUP BY l.id, l.last_name, l.birth_date
-ORDER BY orders_count DESC;
+ORDER BY expeditions_led DESC;
 
--- Анализ массивов: статистика оценок туров
-SELECT 'Статистика оценок туров (из массивов):' AS query_name;
+-- Анализ массивов: статистика рейтингов туров
+SELECT 'Статистика рейтингов туров (из массивов):' AS query_name;
 SELECT 
     tour_name,
-    array_length(features, 1) as criteria_count,
-    (SELECT AVG(unnest_val::numeric) FROM unnest(features) AS unnest_val WHERE unnest_val IS NOT NULL) as avg_rating
+    array_length(features, 1) as criteria_evaluated,
+    (SELECT AVG(unnest_val::numeric) FROM unnest(features) AS unnest_val WHERE unnest_val IS NOT NULL) as avg_rating,
+    (SELECT MAX(unnest_val::numeric) FROM unnest(features) AS unnest_val WHERE unnest_val IS NOT NULL) as max_rating
 FROM tour_features
 WHERE features IS NOT NULL AND array_length(features, 1) > 0;
+
+-- Дополнительный анализ: сравнение периодов
+SELECT 'Сравнение активности по месяцам:' AS query_name;
+SELECT 
+    EXTRACT(MONTH FROM order_date) as order_month,
+    COUNT(*) as bookings,
+    AVG(participants) as avg_group_size,
+    SUM(participants) as total_tourists
+FROM orders
+GROUP BY EXTRACT(MONTH FROM order_date)
+ORDER BY order_month;
+
+-- Анализ расписаний: подсчет рабочих дней
+SELECT 'Анализ рабочих графиков:' AS query_name;
+SELECT 
+    leader_name,
+    array_length(monthly_schedule, 1) as weeks_planned,
+    array_length(monthly_schedule, 2) as days_per_week,
+    notes
+FROM schedule_matrix
+ORDER BY leader_name;
